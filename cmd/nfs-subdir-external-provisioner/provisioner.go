@@ -34,9 +34,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/kubernetes/pkg/apis/core/v1/helper"
 	"k8s.io/client-go/tools/clientcmd"
-	"sigs.k8s.io/sig-storage-lib-external-provisioner/controller"
+	"sigs.k8s.io/sig-storage-lib-external-provisioner/v5/controller"
 )
 
 const (
@@ -189,7 +188,7 @@ func (p *nfsProvisioner) getClassForVolume(pv *v1.PersistentVolume) (*storage.St
 	if p.client == nil {
 		return nil, fmt.Errorf("Cannot get kube client")
 	}
-	className := helper.GetPersistentVolumeClass(pv)
+	className := pv.Spec.StorageClassName
 	if className == "" {
 		return nil, fmt.Errorf("Volume has no storage class")
 	}
