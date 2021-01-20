@@ -1,4 +1,4 @@
-module github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+module github.com/kubernetes-sigs/glusterfs-subdir-external-provisioner
 
 go 1.14
 

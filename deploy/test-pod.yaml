@@ -12,10 +12,10 @@ spec:
       - "-c"
       - "touch /mnt/SUCCESS && exit 0 || exit 1"
     volumeMounts:
-      - name: nfs-pvc
+      - name: glusterfs-pvc
         mountPath: "/mnt"
   restartPolicy: "Never"
   volumes:
-    - name: nfs-pvc
+    - name: glusterfs-pvc
       persistentVolumeClaim:
         claimName: test-claim

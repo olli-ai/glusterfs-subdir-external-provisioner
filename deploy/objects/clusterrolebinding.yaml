@@ -1,12 +1,12 @@
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: run-nfs-client-provisioner
+  name: run-glusterfs-client-provisioner
 subjects:
   - kind: ServiceAccount
-    name: nfs-client-provisioner
+    name: glusterfs-client-provisioner
     namespace: default
 roleRef:
   kind: ClusterRole
-  name: nfs-client-provisioner-runner
+  name: glusterfs-client-provisioner-runner
   apiGroup: rbac.authorization.k8s.io

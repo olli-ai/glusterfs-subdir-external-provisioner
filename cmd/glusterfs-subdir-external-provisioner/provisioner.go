@@ -42,10 +42,10 @@ const (
 	provisionerNameKey = "PROVISIONER_NAME"
 )
 
-type nfsProvisioner struct {
+type glusterfsProvisioner struct {
 	client kubernetes.Interface
-	server string
-	path   string
+	endpoints string
+	path      string
 }
 
 type pvcMetadata struct {
@@ -75,13 +75,13 @@ const (
 	mountPath = "/persistentvolumes"
 )
 
-var _ controller.Provisioner = &nfsProvisioner{}
+var _ controller.Provisioner = &glusterfsProvisioner{}
 
-func (p *nfsProvisioner) Provision(options controller.ProvisionOptions) (*v1.PersistentVolume, error) {
+func (p *glusterfsProvisioner) Provision(options controller.ProvisionOptions) (*v1.PersistentVolume, error) {
 	if options.PVC.Spec.Selector != nil {
 		return nil, fmt.Errorf("claim Selector is not supported")
 	}
-	glog.V(4).Infof("nfs provisioner: VolumeOptions %v", options)
+	glog.V(4).Infof("glusterfs provisioner: VolumeOptions %v", options)
 
 	pvcNamespace := options.PVC.Namespace
 	pvcName := options.PVC.Name
@@ -125,10 +125,10 @@ func (p *nfsProvisioner) Provision(options controller.ProvisionOptions) (*v1.Per
 				v1.ResourceName(v1.ResourceStorage): options.PVC.Spec.Resources.Requests[v1.ResourceName(v1.ResourceStorage)],
 			},
 			PersistentVolumeSource: v1.PersistentVolumeSource{
-				NFS: &v1.NFSVolumeSource{
-					Server:   p.server,
-					Path:     path,
-					ReadOnly: false,
+				Glusterfs: &v1.GlusterfsPersistentVolumeSource{
+					EndpointsName: p.endpoints,
+					Path:          path,
+					ReadOnly:      false,
 				},
 			},
 		},
@@ -136,8 +136,8 @@ func (p *nfsProvisioner) Provision(options controller.ProvisionOptions) (*v1.Per
 	return pv, nil
 }
 
-func (p *nfsProvisioner) Delete(volume *v1.PersistentVolume) error {
-	path := volume.Spec.PersistentVolumeSource.NFS.Path
+func (p *glusterfsProvisioner) Delete(volume *v1.PersistentVolume) error {
+	path := volume.Spec.PersistentVolumeSource.Glusterfs.Path
 	relativePath := strings.Replace(path, p.path, "", 1)
 	oldPath := filepath.Join(mountPath, relativePath)
 
@@ -184,7 +184,7 @@ func (p *nfsProvisioner) Delete(volume *v1.PersistentVolume) error {
 }
 
 // getClassForVolume returns StorageClass
-func (p *nfsProvisioner) getClassForVolume(pv *v1.PersistentVolume) (*storage.StorageClass, error) {
+func (p *glusterfsProvisioner) getClassForVolume(pv *v1.PersistentVolume) (*storage.StorageClass, error) {
 	if p.client == nil {
 		return nil, fmt.Errorf("Cannot get kube client")
 	}
@@ -203,13 +203,13 @@ func main() {
 	flag.Parse()
 	flag.Set("logtostderr", "true")
 
-	server := os.Getenv("NFS_SERVER")
-	if server == "" {
-		glog.Fatal("NFS_SERVER not set")
+	endpoints := os.Getenv("GLUSTERFS_ENDPOINTS")
+	if endpoints == "" {
+		glog.Fatal("GLUSTERFS_ENDPOINTS not set")
 	}
-	path := os.Getenv("NFS_PATH")
+	path := os.Getenv("GLUSTERFS_PATH")
 	if path == "" {
-		glog.Fatal("NFS_PATH not set")
+		glog.Fatal("GLUSTERFS_PATH not set")
 	}
 	provisionerName := os.Getenv(provisionerNameKey)
 	if provisionerName == "" {
@@ -255,16 +255,16 @@ func main() {
 		}
 	}
 
-	clientNFSProvisioner := &nfsProvisioner{
+	clientGlusterfsProvisioner := &glusterfsProvisioner{
 		client: clientset,
-		server: server,
+		endpoints: endpoints,
 		path:   path,
 	}
-	// Start the provision controller which will dynamically provision efs NFS
-	// PVs
+	// Start the provision controller which will dynamically provision
+	// GlusterFS PVs
 	pc := controller.NewProvisionController(clientset,
 		provisionerName,
-		clientNFSProvisioner,
+		clientGlusterfsProvisioner,
 		serverVersion.GitVersion,
 		controller.LeaderElection(leaderElection),
 	)

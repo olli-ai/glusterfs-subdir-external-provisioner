@@ -1,8 +1,8 @@
-# Kubernetes NFS-Client Provisioner
+# Kubernetes GlusterFS-Client Provisioner
 
-NFS subdir external provisioner is an automatic provisioner that use your _existing and already configured_ NFS server to support dynamic provisioning of Kubernetes Persistent Volumes via Persistent Volume Claims. Persistent volumes are provisioned as `${namespace}-${pvcName}-${pvName}`.
+GlusterFS subdir external provisioner is an automatic provisioner that use your _existing and already configured_ GlusterFS server to support dynamic provisioning of Kubernetes Persistent Volumes via Persistent Volume Claims. Persistent volumes are provisioned as `${namespace}-${pvcName}-${pvName}`.
 
-Note: This repository is being migrated from https://github.com/kubernetes-incubator/external-storage/tree/master/nfs-client. Some of the following instructions will be updated once the migration is completed. To test container image built from this repository, you will have to build and push the nfs-client-provisioner image using the following instructions.
+This is a fork from https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner adapted to GlusterFS.
 
 ```sh
 make build
@@ -11,33 +11,33 @@ make build
 make image
 ```
 
-## How to deploy nfs-client to your cluster
+## How to deploy glusterfs-client to your cluster
 
-**nfs-client** is an automatic provisioner that use your _existing and already configured_ NFS server to support dynamic provisioning of Kubernetes Persistent Volumes via Persistent Volume Claims. Persistent volumes are provisioned as `${namespace}-${pvcName}-${pvName}`.
+**glusterfs-client** is an automatic provisioner that use your _existing and already configured_ GlusterFS server to support dynamic provisioning of Kubernetes Persistent Volumes via Persistent Volume Claims. Persistent volumes are provisioned as `${namespace}-${pvcName}-${pvName}`.
 
-To note again, you must _already_ have an NFS Server.
+To note again, you must _already_ have an GlusterFS Server.
 
 ### With Helm
 
-Follow the instructions for the stable helm chart maintained at https://github.com/helm/charts/tree/master/stable/nfs-client-provisioner
+Follow the instructions for the stable helm chart maintained at https://github.com/helm/charts/tree/master/stable/glusterfs-client-provisioner
 
 The tl;dr is
 
 ```bash
-$ helm install stable/nfs-client-provisioner --set nfs.server=x.x.x.x --set nfs.path=/exported/path
+$ helm install stable/glusterfs-client-provisioner --set glusterfs.endpoints=x.x.x.x --set glusterfs.path=/exported/path
 ```
 
 ### Without Helm
 
-**Step 1: Get connection information for your NFS server**
+**Step 1: Get connection information for your GlusterFS server**
 
-Make sure your NFS server is accessible from your Kubernetes cluster and get the information you need to connect to it. At a minimum you will need its hostname.
+Make sure your GlusterFS server is accessible from your Kubernetes cluster and get the information you need to connect to it. At a minimum you will need its hostname.
 
-**Step 2: Get the NFS-Client Provisioner files**
+**Step 2: Get the GlusterFS-Client Provisioner files**
 
-To setup the provisioner you will download a set of YAML files, edit them to add your NFS server's connection information and then apply each with the `kubectl` / `oc` command.
+To setup the provisioner you will download a set of YAML files, edit them to add your GlusterFS server's connection information and then apply each with the `kubectl` / `oc` command.
 
-Get all of the files in the [deploy](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/tree/master/deploy) directory of this repository. These instructions assume that you have cloned the [kubernetes-sigs/nfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/) repository and have a bash-shell open in the root directory.
+Get all of the files in the [deploy](https://github.com/kubernetes-sigs/glusterfs-subdir-external-provisioner/tree/master/deploy) directory of this repository. These instructions assume that you have cloned the [kubernetes-sigs/glusterfs-subdir-external-provisioner](https://github.com/kubernetes-sigs/glusterfs-subdir-external-provisioner/) repository and have a bash-shell open in the root directory.
 
 **Step 3: Setup authorization**
 
@@ -64,56 +64,56 @@ $ NAMESPACE=`oc project -q`
 $ sed -i'' "s/namespace:.*/namespace: $NAMESPACE/g" ./deploy/rbac.yaml
 $ oc create -f deploy/rbac.yaml
 $ oc create role use-scc-hostmount-anyuid --verb=use --resource=scc --resource-name=hostmount-anyuid -n $NAMESPACE
-$ oc adm policy add-role-to-user use-scc-hostmount-anyuid system:serviceaccount:$NAMESPACE:nfs-client-provisioner
+$ oc adm policy add-role-to-user use-scc-hostmount-anyuid system:serviceaccount:$NAMESPACE:glusterfs-client-provisioner
 ```
 
-**Step 4: Configure the NFS-Client provisioner**
+**Step 4: Configure the GlusterFS-Client provisioner**
 
 Note: To deploy to an ARM-based environment, use: `deploy/deployment-arm.yaml` instead, otherwise use `deploy/deployment.yaml`.
 
-You must edit the provisioner's deployment file to specify the correct location of your nfs-client-provisioner container image.
+You must edit the provisioner's deployment file to specify the correct location of your glusterfs-client-provisioner container image.
 
-Next you must edit the provisioner's deployment file to add connection information for your NFS server. Edit `deploy/deployment.yaml` and replace the two occurences of <YOUR NFS SERVER HOSTNAME> with your server's hostname.
+Next you must edit the provisioner's deployment file to add connection information for your GlusterFS server. Edit `deploy/deployment.yaml` and replace the two occurences of <YOUR GLUSTERFS SERVERS HOSTNAMES> with your server's hostname.
 
 ```yaml
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: nfs-client-provisioner
+  name: glusterfs-client-provisioner
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nfs-client-provisioner
+      app: glusterfs-client-provisioner
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: nfs-client-provisioner
+        app: glusterfs-client-provisioner
     spec:
-      serviceAccountName: nfs-client-provisioner
+      serviceAccountName: glusterfs-client-provisioner
       containers:
-        - name: nfs-client-provisioner
-          image: quay.io/external_storage/nfs-client-provisioner:latest
+        - name: glusterfs-client-provisioner
+          image: quay.io/external_storage/glusterfs-client-provisioner:latest
           volumeMounts:
-            - name: nfs-client-root
+            - name: glusterfs-client-root
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
               value: fuseim.pri/ifs
-            - name: NFS_SERVER
-              value: <YOUR NFS SERVER HOSTNAME>
-            - name: NFS_PATH
-              value: /var/nfs
+            - name: GLUSTERFS_ENDPOINTS
+              value: <YOUR GLUSTERFS SERVERS HOSTNAMES>
+            - name: GLUSTERFS_PATH
+              value: /var/glusterfs
       volumes:
-        - name: nfs-client-root
-          nfs:
-            server: <YOUR NFS SERVER HOSTNAME>
-            path: /var/nfs
+        - name: glusterfs-client-root
+          glusterfs:
+            endpoints: <YOUR GLUSTERFS SERVERS HOSTNAMES>
+            path: /var/glusterfs
 ```
 
-You may also want to change the PROVISIONER_NAME above from `fuseim.pri/ifs` to something more descriptive like `nfs-storage`, but if you do remember to also change the PROVISIONER_NAME in the storage class definition below.
+You may also want to change the PROVISIONER_NAME above from `fuseim.pri/ifs` to something more descriptive like `glusterfs-storage`, but if you do remember to also change the PROVISIONER_NAME in the storage class definition below.
 
 To disable leader election, define an env variable named ENABLE_LEADER_ELECTION and set its value to false.
 
@@ -127,22 +127,22 @@ To disable leader election, define an env variable named ENABLE_LEADER_ELECTION 
 | archiveOnDelete | If it exists and has a false value, delete the directory. if `onDelete` exists, `archiveOnDelete` will be ignored.                                                           | will be archived with name on the share: `archived-+volume.Name` |
 | pathPattern     | Specifies a template for creating a directory path via PVC metadata's such as labels, annotations, name or namespace. To specify metadata use `${.PVC.}`: `${PVC.namespace}` |                               n/a                                |
 
-This is `deploy/class.yaml` which defines the NFS-Client's Kubernetes Storage Class:
+This is `deploy/class.yaml` which defines the GlusterFS-Client's Kubernetes Storage Class:
 
 ```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: managed-nfs-storage
+  name: managed-glusterfs-storage
 provisioner: fuseim.pri/ifs # or choose another name, must match deployment's env PROVISIONER_NAME'
 parameters:
-  pathPattern: "${.PVC.namespace}/${.PVC.annotations.nfs.io/storage-path}" # waits for nfs.io/storage-path annotation, if not specified will accept as empty string.
+  pathPattern: "${.PVC.namespace}/${.PVC.annotations.glusterfs.io/storage-path}" # waits for glusterfs.io/storage-path annotation, if not specified will accept as empty string.
   onDelete: delete
 ```
 
 **Step 6: Finally, test your environment!**
 
-Now we'll test your NFS provisioner.
+Now we'll test your GlusterFS provisioner.
 
 Deploy:
 
@@ -150,7 +150,7 @@ Deploy:
 $ kubectl create -f deploy/test-claim.yaml -f deploy/test-pod.yaml
 ```
 
-Now check your NFS Server for the file `SUCCESS`.
+Now check your GlusterFS Server for the file `SUCCESS`.
 
 ```sh
 kubectl delete -f deploy/test-pod.yaml -f deploy/test-claim.yaml
@@ -170,8 +170,8 @@ apiVersion: v1
 metadata:
   name: test-claim
   annotations:
-    volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"
-    nfs.io/storage-path: "test-path" # not required, depending on whether this annotation was shown in the storage class description
+    volume.beta.kubernetes.io/storage-class: "managed-glusterfs-storage"
+    glusterfs.io/storage-path: "test-path" # not required, depending on whether this annotation was shown in the storage class description
 spec:
   accessModes:
     - ReadWriteMany
@@ -195,4 +195,4 @@ The pipeline adds several labels:
 
 **Important:**
 * The pipeline performs the docker login command using `REGISTRY_USERNAME` and `REGISTRY_TOKEN` secrets, which have to be provided.
-* You also need to provide the `DOCKER_IMAGE` secret specifying your Docker image name, e.g., `quay.io/[username]/nfs-subdir-external-provisioner`.
+* You also need to provide the `DOCKER_IMAGE` secret specifying your Docker image name, e.g., `quay.io/[username]/glusterfs-subdir-external-provisioner`.

@@ -3,9 +3,9 @@ apiVersion: v1
 metadata:
   name: test-claim
   annotations:
-    volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"
+    volume.beta.kubernetes.io/storage-class: "managed-glusterfs-storage"
 spec:
-  storageClassName: managed-nfs-storage
+  storageClassName: managed-glusterfs-storage
   accessModes:
     - ReadWriteMany
   resources:

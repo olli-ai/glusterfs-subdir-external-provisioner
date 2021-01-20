@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nfs-client-provisioner
+  name: glusterfs-client-provisioner
   labels:
-    app: nfs-client-provisioner
+    app: glusterfs-client-provisioner
   # replace with namespace where provisioner is deployed
   namespace: default
 spec:
@@ -12,28 +12,28 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: nfs-client-provisioner
+      app: glusterfs-client-provisioner
   template:
     metadata:
       labels:
-        app: nfs-client-provisioner
+        app: glusterfs-client-provisioner
     spec:
-      serviceAccountName: nfs-client-provisioner
+      serviceAccountName: glusterfs-client-provisioner
       containers:
-        - name: nfs-client-provisioner
-          image: quay.io/external_storage/nfs-client-provisioner:latest
+        - name: glusterfs-client-provisioner
+          image: quay.io/external_storage/glusterfs-client-provisioner:latest
           volumeMounts:
-            - name: nfs-client-root
+            - name: glusterfs-client-root
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
               value: fuseim.pri/ifs
-            - name: NFS_SERVER
+            - name: GLUSTERFS_ENDPOINTS
               value: 10.10.10.60
-            - name: NFS_PATH
+            - name: GLUSTERFS_PATH
               value: /ifs/kubernetes
       volumes:
-        - name: nfs-client-root
-          nfs:
-            server: 10.10.10.60
+        - name: glusterfs-client-root
+          glusterfs:
+            endpoints: 10.10.10.60
             path: /ifs/kubernetes

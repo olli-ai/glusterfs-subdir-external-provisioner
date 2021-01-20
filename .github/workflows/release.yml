@@ -1,3 +1,64 @@
+name: Release
+
+on:
+  create:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    name: Build and release image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Version
+        id: version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
+      - name: Build and push
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: olliai/glusterfs-subdir-external-provisioner
+          tags: latest,${{ steps.version.outputs.VERSION }}
+
+  bump-version:
+    name: Bump app version in Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Version
+        id: version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
+      - run: bash ./scripts/bump-app-version.sh publish
+        env:
+          CHART_PATH: deploy/helm-chart/glusterfs-subdir-external-provisioner
+          RELEASE_VERSION: ${{ steps.version.outputs.VERSION }}
+          RELEASE_USER_TOKEN: ${{ secrets.RELEASE_USER_TOKEN }}
+          RELEASE_USER: ${{ secrets.RELEASE_USER }}
+          RELEASE_USER_NAME: ${{ secrets.RELEASE_USER_NAME }}
+          RELEASE_USER_EMAIL: ${{ secrets.RELEASE_USER_EMAIL }}
+          CHARTS_REPOSITORY: olli-ai/helm-charts
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 name: ci
 
 on:
