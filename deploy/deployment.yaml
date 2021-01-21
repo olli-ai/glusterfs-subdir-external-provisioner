@@ -21,19 +21,19 @@ spec:
       serviceAccountName: glusterfs-client-provisioner
       containers:
         - name: glusterfs-client-provisioner
-          image: quay.io/external_storage/glusterfs-client-provisioner:latest
+          image: olliai/glusterfs-client-provisioner:latest
           volumeMounts:
             - name: glusterfs-client-root
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
-              value: fuseim.pri/ifs
+              value: cluster.local/glusterfs
             - name: GLUSTERFS_ENDPOINTS
-              value: 10.10.10.60
+              value: 10.10.10.60:volume
             - name: GLUSTERFS_PATH
-              value: /ifs/kubernetes
+              value: /kubedata
       volumes:
         - name: glusterfs-client-root
           glusterfs:
-            endpoints: 10.10.10.60
-            path: /ifs/kubernetes
+            endpoints: 10.10.10.60:volume
+            path: /kubedata

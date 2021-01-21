@@ -26,7 +26,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: run-glusterfs-client-provisioner
+  name:-glusterfs-client-provisioner-runner
 subjects:
   - kind: ServiceAccount
     name: glusterfs-client-provisioner
@@ -40,7 +40,7 @@ roleRef:
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: leader-locking-glusterfs-client-provisioner
+  name: glusterfs-client-provisioner-leader-locking
   # replace with namespace where provisioner is deployed
   namespace: default
 rules:
@@ -51,7 +51,7 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: leader-locking-glusterfs-client-provisioner
+  name: glusterfs-client-provisioner-leader-locking
   # replace with namespace where provisioner is deployed
   namespace: default
 subjects:
@@ -61,5 +61,5 @@ subjects:
     namespace: default
 roleRef:
   kind: Role
-  name: leader-locking-glusterfs-client-provisioner
+  name: glusterfs-client-provisioner-leader-locking
   apiGroup: rbac.authorization.k8s.io

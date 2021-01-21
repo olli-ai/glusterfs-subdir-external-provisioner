@@ -20,7 +20,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: olliai/glusterfs-subdir-external-provisioner
+          repository: olliai/glusterfs-client-provisioner
           tags: latest,${{ steps.version.outputs.VERSION }}
 
   bump-version:
@@ -34,7 +34,7 @@ jobs:
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/v}
       - run: bash ./scripts/bump-app-version.sh publish
         env:
-          CHART_PATH: deploy/helm-chart/glusterfs-subdir-external-provisioner
+          CHART_PATH: deploy/helm-chart/glusterfs-client-provisioner
           RELEASE_VERSION: ${{ steps.version.outputs.VERSION }}
           RELEASE_USER_TOKEN: ${{ secrets.RELEASE_USER_TOKEN }}
           RELEASE_USER: ${{ secrets.RELEASE_USER }}

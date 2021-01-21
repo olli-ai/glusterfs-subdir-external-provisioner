@@ -1,0 +1,24 @@
+{{ if .Values.storageClass.create -}}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClass.name }}
+  labels:
+    app: {{ template "glusterfs-client-provisioner.name" . }}
+    chart: {{ template "glusterfs-client-provisioner.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+{{- if .Values.storageClass.defaultClass }}
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+{{- end }}
+provisioner: {{ template "glusterfs-client-provisioner.provisionerName" . }}
+parameters:
+  archiveOnDelete: "false"
+{{- if .Values.glusterfs.mountOptions }}
+mountOptions:
+  {{- range .Values.glusterfs.mountOptions }}
+  - {{ . }}
+  {{- end }}
+{{- end }}
+{{ end -}}

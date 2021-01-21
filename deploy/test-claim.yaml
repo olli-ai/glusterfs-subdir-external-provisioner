@@ -2,10 +2,8 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: test-claim
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "managed-glusterfs-storage"
 spec:
-  storageClassName: managed-glusterfs-storage
+  storageClassName: glusterfs-client
   accessModes:
     - ReadWriteMany
   resources:

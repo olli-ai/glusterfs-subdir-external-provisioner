@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "glusterfs-client-provisioner.fullname" . }}
+  labels:
+    app: {{ template "glusterfs-client-provisioner.name" . }}
+    chart: {{ template "glusterfs-client-provisioner.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: {{ template "glusterfs-client-provisioner.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      {{- if and (.Values.tolerations) (semverCompare "<1.6-0" .Capabilities.KubeVersion.GitVersion) }}
+        scheduler.alpha.kubernetes.io/tolerations: '{{ toJson .Values.tolerations }}'
+      {{- end }}
+      labels:
+        app: {{ template "glusterfs-client-provisioner.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "glusterfs-client-provisioner.serviceAccountName" . }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      containers:
+        - name: glusterfs-client-provisioner
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          volumeMounts:
+            - name: glusterfs-client-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: {{ template "glusterfs-client-provisioner.provisionerName" . }}
+            - name: GLUSTERFS_ENDPOINTS
+              value: {{ template "glusterfs-client-provisioner.endpoints" . }}
+            - name: GLUSTERFS_PATH
+              value: {{ .Values.glusterfs.path }}
+          {{- with .Values.resources }}
+          resources:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+      volumes:
+        - name: glusterfs-client-root
+{{- if .Values.buildMode }}
+          emptyDir: {}
+{{- else if .Values.glusterfs.mountOptions }}
+          persistentVolumeClaim:
+            claimName: pvc-{{ template "glusterfs-client-provisioner.fullname" . }}
+{{- else }}
+          glusterfs:
+            endpoints: {{ template "glusterfs-client-provisioner.endpoints" . }}
+            path: {{ .Values.glusterfs.path }}
+{{- end }}
+      {{- if and (.Values.tolerations) (semverCompare "^1.6-0" .Capabilities.KubeVersion.GitVersion) }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 6 }}
+      {{- end }}
