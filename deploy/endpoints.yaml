@@ -1,0 +1,11 @@
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: glusterfs-client-provisioner
+  labels:
+    app: glusterfs-client-provisioner
+subsets:
+- addresses:
+  - ip: x.x.x.x
+  ports:
+  - port: 1

@@ -43,9 +43,10 @@ const (
 )
 
 type glusterfsProvisioner struct {
-	client kubernetes.Interface
+	client    kubernetes.Interface
 	endpoints string
 	path      string
+	namespace string
 }
 
 type pvcMetadata struct {
@@ -127,8 +128,9 @@ func (p *glusterfsProvisioner) Provision(options controller.ProvisionOptions) (*
 			PersistentVolumeSource: v1.PersistentVolumeSource{
 				Glusterfs: &v1.GlusterfsPersistentVolumeSource{
 					EndpointsName: p.endpoints,
-					Path:          path,
-					ReadOnly:      false,
+					Path:               path,
+					ReadOnly:           false,
+					EndpointsNamespace: &p.namespace,
 				},
 			},
 		},
@@ -203,6 +205,10 @@ func main() {
 	flag.Parse()
 	flag.Set("logtostderr", "true")
 
+	namespace := os.Getenv("NAMESPACE")
+	if namespace == "" {
+		glog.Fatal("NAMESPACE not set")
+	}
 	endpoints := os.Getenv("GLUSTERFS_ENDPOINTS")
 	if endpoints == "" {
 		glog.Fatal("GLUSTERFS_ENDPOINTS not set")
@@ -211,9 +217,9 @@ func main() {
 	if path == "" {
 		glog.Fatal("GLUSTERFS_PATH not set")
 	}
-	provisionerName := os.Getenv(provisionerNameKey)
+	provisionerName := os.Getenv("PROVISIONER_NAME")
 	if provisionerName == "" {
-		glog.Fatalf("environment variable %s is not set! Please set it.", provisionerNameKey)
+		glog.Fatal("PROVISIONER_NAME not set")
 	}
 	kubeconfig := os.Getenv("KUBECONFIG")
 	var config *rest.Config
@@ -256,9 +262,10 @@ func main() {
 	}
 
 	clientGlusterfsProvisioner := &glusterfsProvisioner{
-		client: clientset,
+		client:    clientset,
 		endpoints: endpoints,
-		path:   path,
+		path:      path,
+		namespace: namespace,
 	}
 	// Start the provision controller which will dynamically provision
 	// GlusterFS PVs

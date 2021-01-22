@@ -7,6 +7,10 @@ metadata:
     chart: {{ template "glusterfs-client-provisioner.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+{{- with .Values.deployment.annotations  }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
@@ -23,6 +27,10 @@ spec:
       labels:
         app: {{ template "glusterfs-client-provisioner.name" . }}
         release: {{ .Release.Name }}
+{{- with .Values.pod.annotations  }}
+      annotations:
+{{ toYaml . | indent 8 }}
+{{- end }}
     spec:
       serviceAccountName: {{ template "glusterfs-client-provisioner.serviceAccountName" . }}
       {{- if .Values.nodeSelector }}
@@ -38,17 +46,21 @@ spec:
       {{- end }}
       containers:
         - name: glusterfs-client-provisioner
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ default .Chart.Version .Values.image.tag }}"
           volumeMounts:
             - name: glusterfs-client-root
               mountPath: /persistentvolumes
           env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: PROVISIONER_NAME
               value: {{ template "glusterfs-client-provisioner.provisionerName" . }}
             - name: GLUSTERFS_ENDPOINTS
-              value: {{ template "glusterfs-client-provisioner.endpoints" . }}
+              value: {{ template "glusterfs-client-provisioner.endpointsName" . }}
             - name: GLUSTERFS_PATH
-              value: {{ .Values.glusterfs.path }}
+              value: {{ template "glusterfs-client-provisioner.path" . }}
           {{- with .Values.resources }}
           resources:
 {{ toYaml . | indent 12 }}
@@ -62,8 +74,8 @@ spec:
             claimName: pvc-{{ template "glusterfs-client-provisioner.fullname" . }}
 {{- else }}
           glusterfs:
-            endpoints: {{ template "glusterfs-client-provisioner.endpoints" . }}
-            path: {{ .Values.glusterfs.path }}
+            endpoints: {{ template "glusterfs-client-provisioner.endpointsName" . }}
+            path: {{ template "glusterfs-client-provisioner.path" . }}
 {{- end }}
       {{- if and (.Values.tolerations) (semverCompare "^1.6-0" .Capabilities.KubeVersion.GitVersion) }}
       tolerations:

@@ -1,0 +1,26 @@
+{{- if .Values.endpoints.create }}
+{{- $ips := .Values.glusterfs.server }}
+{{- if not .Values.glusterfs.server }}
+  {{- "no glusterfs server provided" | fail }}
+{{- else if kindIs "string" .Values.glusterfs.server }}
+  {{- $ips = split "," .Values.glusterfs.server }}
+{{- else if eq 0 (len .Values.glusterfs.server) }}
+  {{- "no glusterfs server provided" | fail }}
+{{- end }}
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: {{ template "glusterfs-client-provisioner.endpointsName" . }}
+  labels:
+    app: {{ template "glusterfs-client-provisioner.name" . }}
+    chart: {{ template "glusterfs-client-provisioner.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+subsets:
+{{- range $i, $ip := $ips }}
+- addresses:
+  - ip: {{ $ip | quote }}
+  ports:
+  - port: 1
+{{- end }}
+{{- end }}

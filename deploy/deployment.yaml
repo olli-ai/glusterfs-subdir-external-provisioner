@@ -4,8 +4,6 @@ metadata:
   name: glusterfs-client-provisioner
   labels:
     app: glusterfs-client-provisioner
-  # replace with namespace where provisioner is deployed
-  namespace: default
 spec:
   replicas: 1
   strategy:
@@ -26,14 +24,18 @@ spec:
             - name: glusterfs-client-root
               mountPath: /persistentvolumes
           env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
             - name: PROVISIONER_NAME
               value: cluster.local/glusterfs
             - name: GLUSTERFS_ENDPOINTS
-              value: 10.10.10.60:volume
+              value: glusterfs-client-provisioner
             - name: GLUSTERFS_PATH
-              value: /kubedata
+              value: volume/kubedata
       volumes:
         - name: glusterfs-client-root
           glusterfs:
-            endpoints: 10.10.10.60:volume
-            path: /kubedata
+            endpoints: glusterfs-client-provisioner
+            path: volume/kubedata

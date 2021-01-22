@@ -2,6 +2,8 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: glusterfs-client
+  labels:
+    app: glusterfs-client-provisioner
 provisioner: cluster.local/glusterfs # or choose another name, must match deployment's env PROVISIONER_NAME'
 parameters:
   archiveOnDelete: "false"

@@ -2,13 +2,15 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: glusterfs-client-provisioner
-  # replace with namespace where provisioner is deployed
-  namespace: default
+  labels:
+    app: glusterfs-client-provisioner
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: glusterfs-client-provisioner-runner
+  labels:
+    app: glusterfs-client-provisioner
 rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
@@ -26,7 +28,9 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name:-glusterfs-client-provisioner-runner
+  name: glusterfs-client-provisioner-runner
+  labels:
+    app: glusterfs-client-provisioner
 subjects:
   - kind: ServiceAccount
     name: glusterfs-client-provisioner
@@ -41,8 +45,8 @@ kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: glusterfs-client-provisioner-leader-locking
-  # replace with namespace where provisioner is deployed
-  namespace: default
+  labels:
+    app: glusterfs-client-provisioner
 rules:
   - apiGroups: [""]
     resources: ["endpoints"]
@@ -52,8 +56,8 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: glusterfs-client-provisioner-leader-locking
-  # replace with namespace where provisioner is deployed
-  namespace: default
+  labels:
+    app: glusterfs-client-provisioner
 subjects:
   - kind: ServiceAccount
     name: glusterfs-client-provisioner
