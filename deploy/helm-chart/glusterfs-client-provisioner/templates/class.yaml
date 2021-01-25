@@ -14,7 +14,7 @@ metadata:
 {{- end }}
 provisioner: {{ template "glusterfs-client-provisioner.provisionerName" . }}
 reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
-allowVolumeExpansion: {{ .Values.storageClass.archiveOnDelete.allowVolumeExpansion }}
+allowVolumeExpansion: {{ .Values.storageClass.allowVolumeExpansion }}
 parameters:
   archiveOnDelete: {{ .Values.storageClass.archiveOnDelete | quote }}
 {{- if .Values.glusterfs.mountOptions }}
