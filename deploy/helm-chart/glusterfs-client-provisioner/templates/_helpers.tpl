@@ -80,10 +80,13 @@ Return the appropriate apiVersion for podSecurityPolicy.
 Create the GlusterFS path to use
 */}}
 {{- define "glusterfs-client-provisioner.path" -}}
-{{- if and (not .Values.glusterfs.volume) (ne "testRelease" .Release.Name) -}}
+{{- if .Values.glusterfs.volume -}}
+    {{- .Values.glusterfs.volume -}}
+{{- else if eq .Release.Name "testRelease" "test-release" -}}
+    test-volume
+{{- else -}}
     {{- fail "no glusterfs volume provided" -}}
 {{- end -}}
-{{- .Values.glusterfs.volume -}}
 {{- if trimAll "/" .Values.glusterfs.path -}}
     /{{- trimAll "/" .Values.glusterfs.path -}}
 {{- end -}}

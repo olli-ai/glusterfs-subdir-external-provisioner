@@ -1,13 +1,13 @@
 {{- if .Values.endpoints.create }}
 {{- $ips := .Values.glusterfs.server }}
-{{- if eq "testRelease" .Release.Name }}
+{{- if eq .Release.Name "testRelease" "test-release" }}
   {{- $ips = list "test" }}
 {{- else if not .Values.glusterfs.server }}
-  {{- printf "no glusterfs server provided (%s)" .Release.Name | fail }}
+  {{- fail "no glusterfs server provided" }}
 {{- else if kindIs "string" .Values.glusterfs.server }}
   {{- $ips = split "," .Values.glusterfs.server }}
 {{- else if eq 0 (len .Values.glusterfs.server) }}
-  {{- "no glusterfs server provided" | fail }}
+  {{- fail "no glusterfs server provided" }}
 {{- end }}
 kind: Endpoints
 apiVersion: v1
