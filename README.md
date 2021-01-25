@@ -8,9 +8,18 @@ Unlike [Heketi](https://github.com/heketi/heketi), this prosvisionner will use a
 
 This is a fork from [NFS subdir external provisioner](https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner) adapted to GlusterFS.
 
-### Deploy with Helm
+## Requirements
 
-Currenlty, kubernetes endpoints anly support IP addresses. The support for hostnames is [discussed](https://github.com/kubernetes/kubernetes/issues/4447) be doesn't seem to be planned.
+Each node of the cluster needs the `glusterfs-client` package. On Ubuntu:
+```bash
+sudo add-apt-repository -y ppa:gluster/glusterfs-7
+sudo apt install -y glusterfs-client
+```
+You can check how to create a cluster and a volume here: https://www.digitalocean.com/community/tutorials/how-to-create-a-redundant-storage-pool-using-glusterfs-on-ubuntu-18-04
+
+## Deploy with Helm
+
+Currenlty, kubernetes endpoints anly support IP addresses. The support for hostnames is [discussed](https://github.com/kubernetes/kubernetes/issues/4447) be doesn't seem to be planned. GlusterFS is safer to run on local network only anyway.
 
 ```bash
 helm repository add olli-ai https://olli-ai.github.io/helm-charts/
@@ -54,7 +63,7 @@ helm install glusterfs-client olli-ai/glusterfs-client-provisioner \
 | `storageClass.allowVolumeExpansion` | Allow expanding the volume                                  | `true`                                |
 | `storageClass.reclaimPolicy`        | Method used to reclaim an obsoleted volume                  | `Delete`                              |
 | `storageClass.provisionerName`      | Name of the provisionerName                                 | auto (`cluster.local/{fullName}`)     |
-| `storageClass.archiveOnDelete`      | Archive pvc when deleting                                   | `true`                                |
+| `storageClass.archiveOnDelete`      | Archive pvc when deleting                                   | `false`                                |
 | `storageClass.accessModes`          | Set access mode for PV                                      | `ReadWriteOnce`                       |
 | `glusterfs.server`                  | IP of the GlusterFS servers (string or array)               | required if endpoints is not provided |
 | `glusterfs.volume`                  | GlusteFS volume to mount                                    | required                              |
@@ -75,7 +84,7 @@ helm install glusterfs-client olli-ai/glusterfs-client-provisioner \
 | `deployment.annotations`            | Annotations for the deployment                              | `{}`                                  |
 | `pod.annotations`                   | Annotations for the pod                                     | `{}`                                  |
 
-### Deploy without Helm
+## Deploy without Helm
 
 Get the volume configuration
 ```bash

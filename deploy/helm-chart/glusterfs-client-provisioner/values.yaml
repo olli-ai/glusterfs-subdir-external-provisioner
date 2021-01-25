@@ -38,7 +38,7 @@ storageClass:
   reclaimPolicy: Delete
 
   # When set to false your PVs will not be archived by the provisioner upon deletion of the PVC.
-  archiveOnDelete: true
+  archiveOnDelete: false
 
   # Set access mode - ReadWriteOnce, ReadOnlyMany or ReadWriteMany
   accessModes: ReadWriteOnce
