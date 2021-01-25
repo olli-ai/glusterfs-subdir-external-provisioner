@@ -3,3 +3,16 @@ name: glusterfs-client-provisioner
 description: glusterfs-client-provisioner is an automatic provisioner that used your *already configured* GlusterFS cluster, automatically creating Persistent Volumes as subdirectories of the cluster.
 version: 0.0.10
 url: https://github.com/olli-ai/glusterfs-subdir-external-provisioner
+home: https://github.com/olli-ai/glusterfs-subdir-external-provisioner
+sources:
+- https://github.com/olli-ai/glusterfs-subdir-external-provisioner
+keywords:
+- glusterfs
+- storage
+- persistent
+- volume
+- persistentvolume
+- provisioner
+maintainers:
+- name: aure-olli
+  email: aure@olli-ai.com
