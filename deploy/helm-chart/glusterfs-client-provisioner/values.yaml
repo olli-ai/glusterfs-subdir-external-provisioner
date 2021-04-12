@@ -67,6 +67,8 @@ serviceAccount:
 endpoints:
   # Specifies whether an Endpoints should be created
   create: true
+  # Specifies whether an associated service should be created
+  createService: true
 
   # The name of the Endpoints to use.
   # If not set and create is true, a name is generated using the fullname template
