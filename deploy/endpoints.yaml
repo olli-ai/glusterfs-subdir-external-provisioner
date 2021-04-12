@@ -9,3 +9,14 @@ subsets:
   - ip: x.x.x.x
   ports:
   - port: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: glusterfs-client-provisioner
+  labels:
+    app: glusterfs-client-provisioner
+spec:
+  ports: []
+  clusterIP: None
+  type: ClusterIP

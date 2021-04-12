@@ -17,9 +17,13 @@ sudo apt install -y glusterfs-client
 ```
 You can check how to create a cluster and a volume here: https://www.digitalocean.com/community/tutorials/how-to-create-a-redundant-storage-pool-using-glusterfs-on-ubuntu-18-04
 
-## Deploy with Helm
+## About GlusterFS volumes
 
-Currenlty, kubernetes endpoints only support IP addresses. The support for hostnames is [discussed](https://github.com/kubernetes/kubernetes/issues/4447) be doesn't seem to be planned. GlusterFS is safer to run on local network only anyway.
+GlusterFS volumes work with endpoints, and currenlty kubernetes endpoints only support IP addresses. The support for hostnames is [discussed](https://github.com/kubernetes/kubernetes/issues/4447) but doesn't seem to be planned. GlusterFS is safer to run on local network only anyway.
+
+Also endpoints in kubernetes are associated to services (which makes you wonder why GlusterFS volumes are using them), so orphan endpoints will be cleaned when the endpoints controller reboots (https://github.com/kubernetes/kubernetes/issues/12964). It is thus safer to create a service with the same name to avoid it.
+
+## Deploy with Helm
 
 ```bash
 helm repository add olli-ai https://olli-ai.github.io/helm-charts/
@@ -42,6 +46,15 @@ subsets:
   - ip: x.x.x.x
   ports:
   - port: 1 # the port has no impact
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-endpoints
+spec:
+  ports: []
+  clusterIP: None
+  type: ClusterIP
 EOF
 helm repository add olli-ai https://olli-ai.github.io/helm-charts/
 helm install glusterfs-client olli-ai/glusterfs-client-provisioner \
@@ -58,18 +71,19 @@ helm install glusterfs-client olli-ai/glusterfs-client-provisioner \
 | `image.repository`                  | Provisioner image                                           | `olliai/glusterfs-client-provisioner` |
 | `image.tag`                         | Version of provisioner image                                | Chart's version                       |
 | `image.pullPolicy`                  | Image pull policy                                           | `IfNotPresent`                        |
-| `storageClass.name`                 | Name of the storageClass                                    | `glusterfs-client`                          |
+| `storageClass.name`                 | Name of the storageClass                                    | `glusterfs-client`                    |
 | `storageClass.defaultClass`         | Set as the default StorageClass                             | `false`                               |
 | `storageClass.allowVolumeExpansion` | Allow expanding the volume                                  | `true`                                |
 | `storageClass.reclaimPolicy`        | Method used to reclaim an obsoleted volume                  | `Delete`                              |
 | `storageClass.provisionerName`      | Name of the provisionerName                                 | auto (`cluster.local/{fullName}`)     |
-| `storageClass.archiveOnDelete`      | Archive pvc when deleting                                   | `false`                                |
+| `storageClass.archiveOnDelete`      | Archive pvc when deleting                                   | `false`                               |
 | `storageClass.accessModes`          | Set access mode for PV                                      | `ReadWriteOnce`                       |
 | `glusterfs.server`                  | IP of the GlusterFS servers (string or array)               | required if endpoints is not provided |
 | `glusterfs.volume`                  | GlusteFS volume to mount                                    | required                              |
 | `glusterfs.path`                    | Basepath of the mount point to be used                      | `/kubedata`                           |
 | `glusterfs.mountOptions`            | Mount options                                               | null                                  |
 | `endpoints.create`                  | Should we create an Enpoints resource                       | `true`                                |
+| `endpoints.createService`           | Should we create an associated empty service                | `true`                                |
 | `endpoints.name`                    | Name of the Enpoints resource to use                        | auto if `create`, required else       |
 | `endpoints.annotations`             | annotations for the endpoints                               | `{}`                                  |
 | `resources`                         | Resources required (e.g. CPU, memory)                       | `{}`                                  |

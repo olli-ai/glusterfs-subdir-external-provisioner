@@ -25,4 +25,20 @@ subsets:
   ports:
   - port: 1
 {{- end }}
+{{- if .Values.endpoints.createService }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "glusterfs-client-provisioner.endpointsName" . }}
+  labels:
+    app: {{ template "glusterfs-client-provisioner.name" . }}
+    chart: {{ template "glusterfs-client-provisioner.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  ports: []
+  clusterIP: None
+  type: ClusterIP
+{{- end }}
 {{- end }}
