@@ -53,7 +53,7 @@ metadata:
   name: my-endpoints
 spec:
   ports: []
-  clusterIP: null
+  clusterIP: None
   type: ClusterIP
 EOF
 helm repository add olli-ai https://olli-ai.github.io/helm-charts/
