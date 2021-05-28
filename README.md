@@ -1,6 +1,6 @@
 # Kubernetes GlusterFS-Client Provisioner
 
-GlusterFS subdir external provisioner is an automatic provisioner that use your _existing and already configured_ GlusterFS volume to support dynamic provisioning of Kubernetes Persistent Volumes via Persistent Volume Claims. Persistent volumes are provisioned as subdirectories named `${namespace}-${pvcName}-${pvName}`.
+GlusterFS subdir external provisioner is an automatic provisioner that uses your _existing and already configured_ GlusterFS volume to support dynamic provisioning of Kubernetes Persistent Volumes via Persistent Volume Claims. Persistent volumes are provisioned as subdirectories named `${namespace}-${pvcName}-${pvName}`.
 
 To note again, you must _already_ have an GlusterFS cluster with a volume.
 
@@ -10,9 +10,9 @@ This is a fork from [NFS subdir external provisioner](https://github.com/kuberne
 
 ## Requirements
 
-Each node of the cluster needs the `glusterfs-client` package. On Ubuntu:
+Each node of the cluster needs the `glusterfs-client` package. Early versions of GlusterFS won't work with kubernetes ([#2](https://github.com/olli-ai/glusterfs-subdir-external-provisioner/issues/2)), the earliest tested version is 7. On Ubuntu:
 ```bash
-sudo add-apt-repository -y ppa:gluster/glusterfs-7
+sudo add-apt-repository -y ppa:gluster/glusterfs-9
 sudo apt install -y glusterfs-client
 ```
 You can check how to create a cluster and a volume here: https://www.digitalocean.com/community/tutorials/how-to-create-a-redundant-storage-pool-using-glusterfs-on-ubuntu-18-04
@@ -21,7 +21,7 @@ You can check how to create a cluster and a volume here: https://www.digitalocea
 
 GlusterFS volumes work with endpoints, and currenlty kubernetes endpoints only support IP addresses. The support for hostnames is [discussed](https://github.com/kubernetes/kubernetes/issues/4447) but doesn't seem to be planned. GlusterFS is safer to run on local network only anyway.
 
-Also endpoints in kubernetes are associated to services (which makes you wonder why GlusterFS volumes are using them), so orphan endpoints will be cleaned when the endpoints controller reboots (https://github.com/kubernetes/kubernetes/issues/12964). It is thus safer to create a service with the same name to avoid it.
+Also endpoints in kubernetes are associated to services (which makes you wonder why GlusterFS volumes are using them), so orphan endpoints will be cleaned when the endpoints controller reboots ([issue](https://github.com/kubernetes/kubernetes/issues/12964)). It is thus safer to create a service with the same name to avoid it.
 
 ## Deploy with Helm
 
